@@ -1,0 +1,33 @@
+
+.user-info img {
+    width: 30px;
+    height: 40px;
+    margin: 10px 20px;
+    border-radius: 10px;
+}
+
+.section {
+    width: 100%;
+    background-color: #fff;
+    padding: 20px;
+    color: black;
+    margin: 20px;
+}
+
+.section div {
+    width: 100%;
+}
+
+.pages {
+    padding: 30px 10px 15px;
+    max-width: 750px;
+}
+
+.pages .page i{
+    font-size: 40px;
+    color: #ff9900;
+}
+.pages .page h3{
+    font-size: 20px;
+    color: #ff9900;
+}

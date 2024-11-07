@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Chat with LLM {% endblock title %}
+
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+{% endblock links %}
+
+
+{% block content %}
+
+<main class="flex-ctr-clm">
+
+    <div class="container flex-ctr-str">
+
+        <div class="btn-container flex-str-clm" 
+            style="display:none; position: fixed; left: 0; height: 100vh; transition: all .4s ease;">
+            <button title="Open The SideBar" class="btn" onclick="toggleSidebar()" 
+            style="font-size: 30px; background-color: #00ffff6e; height: 150px; color: #fff;">></button>
+        </div>
+
+        <div class="sidebar flex-clm-str">
+
+            <div class="side_bar_options flex-sp-bet">
+                <button title="Close The SideBar" class="btn" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <button title="New Chat" class="btn">
+                    <a href="{% url 'chat_new' %}"> 
+                        <i class="fa-regular fa-comments"></i>
+                    </a>
+                </button>
+            </div>
+
+            <button title="New Chat" class="btn" style="width: 100%; margin: 10px 0;">
+                <a href="{% url 'chat_new' %}"> New Chat</a>
+            </button>
+
+            <hr width="100%" style="margin: 5px 0 10px;">
+            <ul class=" conversations flex-str-clm">
+                {% for conv in conversations %}
+                    <a href="{% url 'chat_view' conv.id %}">
+                        {% if conv.id == conversation.id %}
+                        <li class="flex-sp-bet selected-chat">
+                        {% else %}
+                        <li class="flex-sp-bet">
+                        {% endif %}
+                            
+                            {{ conv.title }} {{conv.id}} 
+
+                            <a href="{% url 'delete_chat' conv.id %}" class="btn">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </li>
+                    </a>
+                {% endfor %}
+            </ul>
+
+        </div>
+
+        <div class="chat-window flex-clm-str">
+
+            <div class="header flex-sp-bet">
+                <a href="{% url 'chat_view_no_id' %}"> <h2 class="logo">Chat with LLM</h2> </a>
+                <button id="mode" class="btn"> <i class="fa-solid fa-moon"></i></button>
+            </div>
+
+            {% if length_msgs == 0 %} 
+            <div class="welcome flex-ctr-clm">
+                <h3>Start Chatting With LLM Locally</h3>
+            </div>
+            {% endif %}
+
+            <div class="chatbox flex-ctr-clm" id="chatbox">
+                {% for message in messages %}
+                    <div class="message {{ message.sender }}">
+                        <p>{{ message.content|safe }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <form method="POST" class="prompt-area">
+                {% csrf_token %}
+                <input type="text" name="prompt" placeholder="Your Prompt ..." required id="prompt">
+                <button type="submit" class="btn" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+            </form>
+
+        </div>
+    </div>
+
+</main>
+
+{% endblock content %}
+
+
+{% block scripts %}
+<script>
+    function scrollToBottom() {
+        const chatbox = document.getElementById("chatbox");
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    window.onload = scrollToBottom;
+
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const chatWindow = document.querySelector('.chat-window');
+        const btn_container = document.querySelector('.btn-container');
+        const messages = document.querySelectorAll('.message');
+        console.log(messages);
+        
+
+        sidebar.classList.toggle('sidebar-hidden');
+
+        if (sidebar.classList.contains('sidebar-hidden')) {
+            chatWindow.style.width = '100%'; 
+            btn_container.style.display = 'flex'
+            messages.forEach(element => {
+                element.style.width = '90%'
+            });
+
+        } else {
+            chatWindow.style.width = '80%';
+            btn_container.style.display = 'none'
+            messages.forEach(element => {
+                element.style.width = '100%'
+            });
+            
+        }
+    }
+</script>
+{% endblock scripts %}
+

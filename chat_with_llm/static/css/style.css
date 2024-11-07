@@ -1,0 +1,343 @@
+:root {
+    --color1 : #212121;
+    --color2 : #fff;
+    --color3 : #ff9900;
+    --color4 : #888;
+}
+
+* {
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+}
+
+main {
+    /* padding: 25px 0 15px; */
+    height: 100vh;
+    background-color: var(--color1);
+}
+
+.container {
+    max-width: 1400px;
+    height: 100%;
+    margin: 0 auto;
+    /* padding: 0 20px; */
+}
+
+p, h1, h2 {
+    padding: 7px 5px;
+}
+
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background-color: var(--color1);
+}
+::-webkit-scrollbar-thumb {
+    background-color: #4158D0;
+    background-image: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
+    border-radius: 10px;
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+}
+
+form {
+    width: 500px;
+    padding: 20px;
+    /* margin: 10px; */
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -o-border-radius: 5px;
+    background-color: #232323;
+    color: #fff;
+}
+
+input {
+    padding: 7px 10px;
+    font-size: 16px;
+    font-weight: 500;
+    width: 100%;
+    margin: 10px 10px 15px;
+}
+
+input[type=submit] {
+    padding: 7px 10px;
+    border: none;
+    background-color: darkorange;
+    font-weight: 700;
+    margin: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: black;
+    transition: all .4s ease;
+    -webkit-transition: all .4s ease;
+    -moz-transition: all .4s ease;
+    -ms-transition: all .4s ease;
+    -o-transition: all .4s ease;
+}
+
+input[type=submit]:hover {
+    background-color: rgb(255, 242, 0);
+}
+
+form a {
+    color: #fff;
+    text-decoration: underline;
+}
+
+p {
+    padding: 15px 0 10px;
+}
+
+/* ****************** */
+
+.sidebar {
+    width: 20%;
+    background-color: var(--color1);
+    padding: 10px;
+    height: 100%;
+    overflow-y: scroll;
+    border-right: 2px solid #fff;
+    transition: all .4s ease;
+}
+
+.sidebar .side_bar_options {
+    width: 100%;
+}
+
+.sidebar .side_bar_options button{
+    cursor: pointer;
+    padding: 5px 7px;
+}
+
+.sidebar h3 {
+    margin-top: 0;
+    color: var(--color2);
+    margin: 5px 0;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
+}
+
+.sidebar ul li {
+    margin-bottom: 5px;
+    padding: 5px 10px;
+    transition: all .4s ease;
+    border-radius: 7px;
+    background-color: var(--color4);
+    width: 100%;
+}
+
+.sidebar ul a {
+    color: var(--color2);
+    font-size: 14px;
+}
+
+.sidebar ul a li i {
+    color: var(--color1) !important;
+    font-size: 16px;
+    /* padding: 0px 5px !important; */
+}
+
+.sidebar ul a i {
+    color: var(--color1) !important;
+}
+
+.sidebar ul li .btn {
+    padding: 5px 10px !important;
+}
+
+.sidebar ul a .selected-chat {
+    background-color: var(--color2) !important;
+    color: var(--color1) !important;
+}
+
+.sidebar-hidden {
+    width: 0;
+    overflow: hidden;
+    display: none !important;
+}
+
+
+/* ****************** */
+
+.chat-window {
+    width: 80%;
+    /* padding: 20px; */
+    height: 100vh;
+    justify-content: space-between !important;
+}
+
+.chat-window .header {
+    height: 45px;
+    width: 100%;
+    background-color: var(--color1);
+    color: var(--color2);
+    border-bottom: 2px #888888 solid;
+    border-radius: 7px;
+    padding: 20px;
+    flex-shrink: 0;
+}
+
+.chat-window .header button {
+    padding: 5px 10px;
+}
+
+.chat-window h3 {
+    margin-top: 20px;
+}
+
+.chatbox {
+    padding: 10px;
+    flex-grow: 1; 
+    margin-bottom: 10px;
+    width: 100%;
+    height: 550px !important;
+    overflow-y: scroll;
+    justify-content: flex-start !important;
+}
+
+.message {
+    margin-bottom: 10px;
+    color: var(--color2);
+    border-radius: 7px;
+    border: 3px solid var(--color3);
+    padding: 5px 10px;
+    width: 100%;
+}
+
+.message.user {
+    text-align: right;
+    background-color: #047a9ede;
+}
+
+.message.bot {
+    text-align: left;
+    background-color: #2b770f;
+}
+
+.message p {
+    font-size: 14px;
+}
+
+/*--------------------------*/
+
+form {
+    display: flex;
+    align-items: center;
+}
+
+form input {
+    flex-grow: 1;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+form button {
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+/* ------------------------ */
+
+.prompt-area {
+    /* position: fixed; */
+    position: sticky;
+    bottom: 0;
+    padding: 0;
+    margin-bottom: 10px;
+    background-color: var(--color1);
+    width: 60%;
+    flex-shrink: 0;
+}
+
+#prompt {
+    font-size: 16px;
+    font-weight: 600;
+    background-color: var(--color2);
+    /* padding: 15px 20px; */
+    margin: 0;
+    margin-right: 0;
+    width: 60%;
+    border: 0;
+    outline: 0;
+    color: var(--color1);
+}
+
+#prompt::placeholder {
+    color: var(--color1);
+}
+
+#send-btn {
+    margin-left: 0;
+    padding: 10px 13px
+}
+
+/*----------------------------------------------------------------*/
+
+.welcome {
+    height: 80%;
+}
+
+.welcome h3{
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--color2);
+    margin: 20px 0;
+}
+
+/*------------------------------------*/
+pre {
+    background-color: #2d2d2d; /* Dark background */
+    color: #f8f8f2; /* Light text color */
+    padding: 16px; /* Padding around the code */
+    border-radius: 8px; /* Rounded corners */
+    overflow-x: auto; /* Horizontal scroll for long lines */
+    font-size: 14px; /* Font size */
+    line-height: 1.5; /* Line height for readability */
+    margin: 16px 0; /* Margin around the block */
+    width: 100%;
+}
+
+/* Style for the <code> tag */
+code {
+    background-color: #2d2d2d; /* Match the background with pre */
+    color: #f8f8f2; /* Text color */
+    font-family: 'Courier New', Courier, monospace; /* Monospace font */
+    padding: 4px 8px; /* Padding inside inline code */
+    border-radius: 4px; /* Rounded corners for inline code */
+    width: 100%;
+}
+
+/* Optional: Additional styling for code syntax highlighting */
+pre code {
+    color: #f8f8f2; /* Default text color */
+}
+
+pre code .keyword { color: #f92672; } /* Keywords like function, var */
+pre code .string { color: #e6db74; } /* Strings */
+pre code .number { color: #ae81ff; } /* Numbers */
+pre code .comment { color: #75715e; } /* Comments */
+pre code .operator { color: #f8f8f2; } /* Operators like +, = */
+pre code .function { color: #a6e22e; } /* Function names */
