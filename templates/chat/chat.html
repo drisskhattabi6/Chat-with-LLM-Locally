@@ -43,18 +43,23 @@
             <ul class=" conversations flex-str-clm">
                 {% for conv in conversations %}
                     <a href="{% url 'chat_view' conv.id %}">
-                        {% if conv.id == conversation.id %}
-                        <li class="flex-sp-bet selected-chat">
+
+                        {% if conversation != None %}
+                            {% if conv.id == conversation.id %}
+                            <li class="flex-sp-bet selected-chat">
+                            {% else %}
+                            <li class="flex-sp-bet">
+                            {% endif %}
                         {% else %}
-                        <li class="flex-sp-bet">
+                            <li class="flex-sp-bet">
                         {% endif %}
                             
-                            {{ conv.title }} {{conv.id}} 
+                                {{ conv.title }} {{conv.id}} 
 
-                            <a href="{% url 'delete_chat' conv.id %}" class="btn">
-                                <i class="fa-solid fa-trash"></i>
-                            </a>
-                        </li>
+                                <a href="{% url 'delete_chat' conv.id %}" class="btn">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </li>
                     </a>
                 {% endfor %}
             </ul>
@@ -64,7 +69,17 @@
         <div class="chat-window flex-clm-str">
 
             <div class="header flex-sp-bet">
-                <a href="{% url 'chat_view_no_id' %}"> <h2 class="logo">Chat with LLM</h2> </a>
+                <a href="{% url 'chat_view_no_id' %}"> 
+                    <h2 class="logo">Chat with LLM</h2> 
+                </a>
+
+                <!-- <form action="" method="post">
+                    <select name="" id="">
+                        <option value="">LLM1</option>
+                    </select>
+                    <input type="text" placeholder="LLM Path in Hugging Face" style="width: 300px;">
+                </form> -->
+
                 <button id="mode" class="btn"> <i class="fa-solid fa-moon"></i></button>
             </div>
 
