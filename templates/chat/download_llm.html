@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Chat with LLM {% endblock title %}
+
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+{% endblock links %}
+
+
+{% block content %}
+
+<main class="flex-ctr-clm">
+    <div class="header flex-sp-bet">
+        <div class="header flex-sp-bet">
+            <a href="{% url 'chat_view_no_id' %}"> 
+                <h2 class="logo">Chat with LLM</h2> 
+            </a>
+    
+            <button id="mode" class="btn"><i class="fa-solid fa-moon"></i></button>
+        </div>
+    </div>
+    <div class="container flex-ctr-clm">
+        <h1>Download LLM</h1>
+
+        <h2>Available LLM Models</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>LLM Name</th>
+                    <th>Downloaded</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for model in llm_models %}
+                <tr>
+                    <td>{{ model.llm_name }}</td>
+                    <td>{{ model.is_downloaded|yesno:"Yes,No" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Download New LLM</h2>
+        <form method="POST" action="{% url 'download_llm' %}">
+            {% csrf_token %}
+            <label for="llm_name">LLM Name:</label>
+            <input type="text" id="llm_name" name="llm_name" placeholder="Enter model name (e.g., gpt2)">
+            <button type="submit">Download</button>
+        </form>
+    </div>
+</main>
+
+{% endblock content %}
+
+
+{% block scripts %}
+<script>
+function handleDownload(event) {
+    event.preventDefault(); // Prevent form submission
+    const llmPath = document.getElementById("llm_path").value;
+
+    if (!llmPath) {
+        alert("Please enter a valid LLM path.");
+        return false;
+    }
+
+    // Show modal with a downloading message
+    document.getElementById("modal-body").textContent = "Downloading the model...";
+    $('#downloadModal').modal('show');
+
+        // Send AJAX request to download the LLM
+    fetch(`/api/download_llm/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ llm_path: llmPath })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById("modal-body").textContent = "Model downloaded successfully!";
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            document.getElementById("modal-body").textContent = `Error: ${data.error}`;
+        }
+    })
+    .catch(error => {
+        document.getElementById("modal-body").textContent = "An unexpected error occurred.";
+        console.error("Error downloading model:", error);
+    });
+
+    return false; // Prevent form default submission
+}
+</script>
+{% endblock scripts %}
+

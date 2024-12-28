@@ -38,6 +38,10 @@
             <button title="New Chat" class="btn" style="width: 100%; margin: 10px 0;">
                 <a href="{% url 'chat_new' %}"> New Chat</a>
             </button>
+            
+            <button title="New Chat" class="btn" style="width: 100%; margin: 10px 0;">
+                <a href="{% url 'download_llm_page' %}" class="btn">Download LLM</a>
+            </button>
 
             <hr width="100%" style="margin: 5px 0 10px;">
             <ul class=" conversations flex-str-clm">
@@ -72,17 +76,23 @@
                 <a href="{% url 'chat_view_no_id' %}"> 
                     <h2 class="logo">Chat with LLM</h2> 
                 </a>
-
-                <!-- <form action="" method="post">
-                    <select name="" id="">
-                        <option value="">LLM1</option>
+            
+                <!-- LLM Selection Section -->
+                <form action="" method="post" id="selectLLMForm" style="background-color: #0000; width: auto;">
+                    {% csrf_token %}
+                    <!-- <label for="llm_select">Choose an LLM:</label> -->
+                    <label for="llm_select">LLM : </label>
+                    <select name="llm_path" id="llm_select">
+                        {% for llm in llm_options %}
+                            <option value="{{ llm.llm_name }}">{{ llm.llm_name }}</option>
+                        {% endfor %}
                     </select>
-                    <input type="text" placeholder="LLM Path in Hugging Face" style="width: 300px;">
-                </form> -->
-
-                <button id="mode" class="btn"> <i class="fa-solid fa-moon"></i></button>
+                    <button type="submit">Select</button>
+                </form>
+            
+                <button id="mode" class="btn"><i class="fa-solid fa-moon"></i></button>
             </div>
-
+            
             {% if length_msgs == 0 %} 
             <div class="welcome flex-ctr-clm">
                 <h3>Start Chatting With LLM Locally</h3>
@@ -112,7 +122,9 @@
 
 
 {% block scripts %}
+
 <script>
+
     function scrollToBottom() {
         const chatbox = document.getElementById("chatbox");
         chatbox.scrollTop = chatbox.scrollHeight;
@@ -147,5 +159,6 @@
         }
     }
 </script>
+
 {% endblock scripts %}
 

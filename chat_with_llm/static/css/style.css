@@ -195,6 +195,14 @@ p {
     padding: 5px 10px;
 }
 
+.chat-window .header select {
+    padding: 5px 10px;
+}
+
+.chat-window .header select option {
+    padding: 5px 10px;
+}
+
 .chat-window h3 {
     margin-top: 20px;
 }
@@ -339,3 +347,5 @@ pre code .number { color: #ae81ff; } /* Numbers */
 pre code .comment { color: #75715e; } /* Comments */
 pre code .operator { color: #f8f8f2; } /* Operators like +, = */
 pre code .function { color: #a6e22e; } /* Function names */
+
+
