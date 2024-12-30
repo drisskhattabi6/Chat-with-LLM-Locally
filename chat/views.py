@@ -6,6 +6,7 @@ from huggingface_hub import login
 import re, markdown
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import json
 
 logging.set_verbosity_error()
 
@@ -23,59 +24,6 @@ llm = pipeline('text-generation', model="gpt2")  # default LLM
 def new_chat(request) :
     conversation = Conversation.objects.create(title="Conversation ")
     return redirect('chat_view', conversation_id=conversation.id)
-
-
-""" def chat_view(request, conversation_id=None):
-    conversation = messages = None
-
-    if conversation_id:
-        conversation = get_object_or_404(Conversation, id=conversation_id)
-        messages = conversation.messages.all()
-
-    if request.method == "POST":
-        user_message = request.POST.get('prompt')
-        if user_message and conversation:
-            # Store user message
-            Message.objects.create(conversation=conversation, sender="user", content=user_message)
-
-            # Generate bot response
-            bot_response = llm(user_message, max_length=250, num_return_sequences=1, truncation=True)[0]['generated_text']
-
-            # Remove the prompt from the generated response
-            bot_response = bot_response.replace(user_message, '').strip()
-
-            # Store bot message
-            Message.objects.create(conversation=conversation, sender="bot", content=bot_response)
-
-            return redirect('chat_view', conversation_id=conversation.id)
-        
-        elif user_message and conversation == None :
-
-            conversation = Conversation.objects.create(title="Conversation ")
-            Message.objects.create(conversation=conversation, sender="user", content=user_message)
-            bot_response = llm(user_message, max_length=250, num_return_sequences=1, truncation=True)[0]['generated_text']
-            bot_response = bot_response.replace(user_message, '').strip()
-
-            # Store bot message
-            Message.objects.create(conversation=conversation, sender="bot", content=bot_response)
-
-            return redirect('chat_view', conversation_id=conversation.id)
-
-    # Fetch all conversations for the sidebar
-    conversations = Conversation.objects.all()
-
-    length_msgs = 0
-    if messages != None :
-        length_msgs = len(messages)
-
-    context = {
-        'conversation': conversation,
-        'messages': messages,
-        'length_msgs': length_msgs,
-        'conversations': conversations,
-    }
-
-    return render(request, 'chat/chat.html', context) """
 
 def chat_view(request, conversation_id=None):
     conversation = messages = None
@@ -159,32 +107,41 @@ def delete_chat(request, conversation_id=None):
 
 
 def download_llm(request):
+    print("Request body:", request.body)
+    print("//////")
     if request.method == "POST":
-        import json
-        data = json.loads(request.body)
-        llm_path = data.get("llm_path")
-
-        if not llm_path:
-            return JsonResponse({"success": False, "error": "Invalid LLM path."})
-
-        # Check if the model is already downloaded
-        downloaded_model, created = DownloadedModel.objects.get_or_create(llm_name=llm_path)
-
-        if downloaded_model.is_downloaded:
-            return JsonResponse({"success": False, "error": "Model already downloaded."})
-
+        print("//////")
         try:
-            # Download the model and tokenizer
-            AutoModelForCausalLM.from_pretrained(llm_path)
-            AutoTokenizer.from_pretrained(llm_path)
+            # Parse JSON from the request body
+            if not request.body:
+                return JsonResponse({"success": False, "error": "Empty request body."})
+            print("-----")
+            llm_name = request.POST.get("llm_name")
+            print("llm_name:", llm_name)
 
-            # Mark as downloaded in the database
-            downloaded_model.is_downloaded = True
-            downloaded_model.save()
+            if not llm_name:
+                return JsonResponse({"success": False, "error": "Invalid LLM path."})
 
-            return JsonResponse({"success": True})
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)})
+            # Check if the model is already downloaded
+            downloaded_model, created = DownloadedModel.objects.get_or_create(llm_name=llm_name)
+
+            if downloaded_model.is_downloaded:
+                return JsonResponse({"success": False, "error": "Model already downloaded."})
+
+            # Attempt to download the model and tokenizer
+            try:
+                AutoModelForCausalLM.from_pretrained(llm_name)
+                AutoTokenizer.from_pretrained(llm_name)
+
+                # Mark as downloaded in the database
+                downloaded_model.is_downloaded = True
+                downloaded_model.save()
+                return JsonResponse({"success": True})
+            except Exception as e:
+                return JsonResponse({"success": False, "error": f"Error downloading model: {str(e)}"})
+
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "error": "Invalid JSON format."})
 
     return JsonResponse({"success": False, "error": "Invalid request method."})
 

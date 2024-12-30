@@ -6,23 +6,48 @@
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'css/form.css' %}">
+
+<style>
+    h1, h2, th, td {
+        color: #fff;
+    }
+
+    p {
+        color: red;
+        font-size: 12px;
+    }
+
+    th, td {
+        padding: 10px 15px;
+    }
+</style>
+
 {% endblock links %}
 
 
 {% block content %}
 
 <main class="flex-ctr-clm">
-    <div class="header flex-sp-bet">
-        <div class="header flex-sp-bet">
+    <div class="container flex-clm-str">
+        <div class="header flex-sp-bet" style="width: 90%; padding: 10px 10px 25px;">
             <a href="{% url 'chat_view_no_id' %}"> 
                 <h2 class="logo">Chat with LLM</h2> 
             </a>
     
             <button id="mode" class="btn"><i class="fa-solid fa-moon"></i></button>
         </div>
-    </div>
-    <div class="container flex-ctr-clm">
+    
+
         <h1>Download LLM</h1>
+        <p>Enter the path of the LLM from Huging Face, <br> (Like : 'huawei-noah/TinyBERT_General_4L_312D')</p>
+        <form method="POST" action="{% url 'download_llm' %}" class="flex-ctr-clm" style="padding-top: 0;">
+            {% csrf_token %}
+            <!-- <label for="llm_name">LLM Name:</label> -->
+            <input type="text" id="llm_name" name="llm_name" placeholder="Enter model name (e.g., gpt2)">
+            <button type="submit" class="btn">Download</button>
+        </form>
+
+        <hr width="50%" height="10px">
 
         <h2>Available LLM Models</h2>
         <table border="1">
@@ -42,13 +67,6 @@
             </tbody>
         </table>
 
-        <h2>Download New LLM</h2>
-        <form method="POST" action="{% url 'download_llm' %}">
-            {% csrf_token %}
-            <label for="llm_name">LLM Name:</label>
-            <input type="text" id="llm_name" name="llm_name" placeholder="Enter model name (e.g., gpt2)">
-            <button type="submit">Download</button>
-        </form>
     </div>
 </main>
 
