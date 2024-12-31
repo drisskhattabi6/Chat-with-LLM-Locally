@@ -1,0 +1,4 @@
+Django==5.0.7
+huggingface_hub==0.24.5
+Markdown==3.7
+transformers==4.43.4

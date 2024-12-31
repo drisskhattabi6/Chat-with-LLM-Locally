@@ -11,7 +11,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 logging.set_verbosity_error()
 
-login(token="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")
+login(token="your_huggingface_token")
 
 selected_llm = "gpt2"
 
@@ -77,7 +77,7 @@ def chat_view(request, conversation_id=None):
 
     # Fetch all downloaded LLM options and conversations for the dropdown
     llm_options = DownloadedModel.objects.filter(is_downloaded=True)
-    conversations = Conversation.objects.all()
+    conversations = Conversation.objects.all().order_by('-id')
 
     # Context for the template
     context = {
@@ -92,7 +92,6 @@ def chat_view(request, conversation_id=None):
     return render(request, 'chat/chat.html', context)
 
 
-
 def delete_chat(request, conversation_id=None):
 
     if conversation_id:
@@ -101,7 +100,6 @@ def delete_chat(request, conversation_id=None):
         conversation.delete()
 
     return redirect('chat_view_no_id')
-
 
 
 def download_llm(request):
