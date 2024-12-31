@@ -1,72 +1,61 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
+from django.urls import reverse
 from .models import Conversation, Message, DownloadedModel
 from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer, logging
 from huggingface_hub import login
 import re, markdown
+import json
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-import json
 
 logging.set_verbosity_error()
 
-# Login to Hugging Face and Load the LLM
 login(token="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")
 
-# Initialize global variable for current llm
-llm = pipeline('text-generation', model="gpt2")  # default LLM
-# downloaded_models = set()
-
-# # llm_path = "idrisskh/moroccan_recipes_chatbot_gemma_2b"
-# llm_path = "gpt2"
-# llm = pipeline('text-generation', model=llm_path)
+selected_llm = "gpt2"
 
 def new_chat(request) :
     conversation = Conversation.objects.create(title="Conversation ")
     return redirect('chat_view', conversation_id=conversation.id)
 
+
 def chat_view(request, conversation_id=None):
     conversation = messages = None
-
-    # Fetch conversation and its messages if conversation_id is provided
-    if conversation_id:
-        conversation = get_object_or_404(Conversation, id=conversation_id)
-        messages = conversation.messages.all()
+    global selected_llm
+    error = None
 
     if request.method == "POST":
         user_message = request.POST.get('prompt')
-        llm_path = request.POST.get('llm_path', "gpt2")  # Default to "gpt2" if none provided
+        llm_path = request.POST.get('llm_path', "gpt2")
 
-        # Check if the LLM is in the database and marked as downloaded
+        if llm_path:
+            selected_llm = llm_path
+
+        # Check if the selected LLM is downloaded
         try:
-            downloaded_model = DownloadedModel.objects.get(llm_name=llm_path)
+            downloaded_model = DownloadedModel.objects.get(llm_name=selected_llm, is_downloaded=True)
 
             # Attempt to load the model and tokenizer
             try:
-                model = AutoModelForCausalLM.from_pretrained(llm_path)
-                tokenizer = AutoTokenizer.from_pretrained(llm_path)
+                model = AutoModelForCausalLM.from_pretrained(selected_llm)
+                tokenizer = AutoTokenizer.from_pretrained(selected_llm)
                 llm = pipeline('text-generation', model=model, tokenizer=tokenizer)
             except Exception as e:
-                # Handle errors during loading of the LLM
-                print(f"Error loading model '{llm_path}': {e}")
-                return render(request, 'chat/chat.html', {
-                    'error': f"Failed to load the model '{llm_path}'. It may not be available locally or is corrupted.",
-                    'conversation': conversation,
-                    'messages': messages,
-                })
+                error = f"Failed to load the model '{selected_llm}'. It may not be available locally or is corrupted."
+                print(f"Error loading model '{selected_llm}': {e}")
 
         except DownloadedModel.DoesNotExist:
-            # If the model is not found in the database
-            return render(request, 'chat/chat.html', {
-                'error': f"The selected model '{llm_path}' is not available in the database.",
-                'conversation': conversation,
-                'messages': messages,
-            })
+            error = f"The selected model '{selected_llm}' is not available in the database."
 
-        # Generate a response if user_message is present
-        if user_message:
-            # Save user message to the database
-            Message.objects.create(conversation=conversation, sender="user", content=user_message)
+        # Handle new conversation creation if conversation_id is not found or not provided
+        if not error and user_message:
+            if not conversation_id:
+                # Create a new conversation
+                conversation = Conversation.objects.create(title="Conversation ")
+
+            # Save the user's message to the database
+            user_message_obj = Message.objects.create(conversation=conversation, sender="user", content=user_message)
 
             # Generate the bot's response
             try:
@@ -75,14 +64,19 @@ def chat_view(request, conversation_id=None):
                 bot_response = "Sorry, I couldn't process your request at the moment."
                 print(f"Error generating response: {e}")
 
-            # Save bot response to the database
+            # Save the bot's response to the database
             Message.objects.create(conversation=conversation, sender="bot", content=bot_response)
 
             # Redirect to refresh the conversation page
             return redirect('chat_view', conversation_id=conversation.id)
 
-    # Fetch all conversations and LLM options for the dropdown
-    llm_options = DownloadedModel.objects.all()
+    # If a conversation ID is provided, fetch the conversation and its messages
+    if conversation_id:
+        conversation = get_object_or_404(Conversation, id=conversation_id)
+        messages = conversation.messages.all()
+
+    # Fetch all downloaded LLM options and conversations for the dropdown
+    llm_options = DownloadedModel.objects.filter(is_downloaded=True)
     conversations = Conversation.objects.all()
 
     # Context for the template
@@ -91,9 +85,12 @@ def chat_view(request, conversation_id=None):
         'messages': messages,
         'conversations': conversations,
         'llm_options': llm_options,
+        'selected_llm': selected_llm,
+        'error': error,
         'length_msgs': len(messages) if messages else 0,
     }
     return render(request, 'chat/chat.html', context)
+
 
 
 def delete_chat(request, conversation_id=None):
@@ -106,42 +103,31 @@ def delete_chat(request, conversation_id=None):
     return redirect('chat_view_no_id')
 
 
+
 def download_llm(request):
-    print("Request body:", request.body)
-    print("//////")
     if request.method == "POST":
-        print("//////")
+        llm_name = request.POST.get("llm_name", "").strip()
+
+        if not llm_name:
+            return JsonResponse({"success": False, "error": "Invalid LLM path."})
+
+        # Check if the model is already downloaded
+        downloaded_model, created = DownloadedModel.objects.get_or_create(llm_name=llm_name)
+
+        if downloaded_model.is_downloaded:
+            return JsonResponse({"success": False, "error": "Model already downloaded."})
+
         try:
-            # Parse JSON from the request body
-            if not request.body:
-                return JsonResponse({"success": False, "error": "Empty request body."})
-            print("-----")
-            llm_name = request.POST.get("llm_name")
-            print("llm_name:", llm_name)
-
-            if not llm_name:
-                return JsonResponse({"success": False, "error": "Invalid LLM path."})
-
-            # Check if the model is already downloaded
-            downloaded_model, created = DownloadedModel.objects.get_or_create(llm_name=llm_name)
-
-            if downloaded_model.is_downloaded:
-                return JsonResponse({"success": False, "error": "Model already downloaded."})
-
             # Attempt to download the model and tokenizer
-            try:
-                AutoModelForCausalLM.from_pretrained(llm_name)
-                AutoTokenizer.from_pretrained(llm_name)
+            AutoModelForCausalLM.from_pretrained(llm_name)
+            AutoTokenizer.from_pretrained(llm_name)
 
-                # Mark as downloaded in the database
-                downloaded_model.is_downloaded = True
-                downloaded_model.save()
-                return JsonResponse({"success": True})
-            except Exception as e:
-                return JsonResponse({"success": False, "error": f"Error downloading model: {str(e)}"})
-
-        except json.JSONDecodeError:
-            return JsonResponse({"success": False, "error": "Invalid JSON format."})
+            # Mark as downloaded in the database
+            downloaded_model.is_downloaded = True
+            downloaded_model.save()
+            return JsonResponse({"success": True, "message": "Model downloaded successfully."})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": f"Error downloading model: {str(e)}"})
 
     return JsonResponse({"success": False, "error": "Invalid request method."})
 

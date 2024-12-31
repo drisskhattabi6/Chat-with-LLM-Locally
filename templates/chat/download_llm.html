@@ -12,7 +12,7 @@
         color: #fff;
     }
 
-    p {
+    p, #downloadModal {
         color: red;
         font-size: 12px;
     }
@@ -20,13 +20,15 @@
     th, td {
         padding: 10px 15px;
     }
+    table {
+        margin: 10px 10px 20px;
+    }
 </style>
 
 {% endblock links %}
 
 
 {% block content %}
-
 <main class="flex-ctr-clm">
     <div class="container flex-clm-str">
         <div class="header flex-sp-bet" style="width: 90%; padding: 10px 10px 25px;">
@@ -36,16 +38,20 @@
     
             <button id="mode" class="btn"><i class="fa-solid fa-moon"></i></button>
         </div>
-    
 
         <h1>Download LLM</h1>
-        <p>Enter the path of the LLM from Huging Face, <br> (Like : 'huawei-noah/TinyBERT_General_4L_312D')</p>
-        <form method="POST" action="{% url 'download_llm' %}" class="flex-ctr-clm" style="padding-top: 0;">
+        <p>Enter the path of the LLM from Hugging Face, <br> (e.g., 'huawei-noah/TinyBERT_General_4L_312D')</p>
+
+        <form id="downloadForm" method="POST">
             {% csrf_token %}
-            <!-- <label for="llm_name">LLM Name:</label> -->
             <input type="text" id="llm_name" name="llm_name" placeholder="Enter model name (e.g., gpt2)">
             <button type="submit" class="btn">Download</button>
         </form>
+
+        <!-- Modal for showing feedback -->
+        <div id="downloadModal" style="display: none;">
+            <p id="modal-body"></p>
+        </div>
 
         <hr width="50%" height="10px">
 
@@ -66,53 +72,50 @@
                 {% endfor %}
             </tbody>
         </table>
-
     </div>
-</main>
 
+    
+</main>
 {% endblock content %}
 
 
 {% block scripts %}
 <script>
-function handleDownload(event) {
-    event.preventDefault(); // Prevent form submission
-    const llmPath = document.getElementById("llm_path").value;
+    document.getElementById("downloadForm").addEventListener("submit", function(event) {
+        event.preventDefault(); // Prevent default form submission
+        const llmName = document.getElementById("llm_name").value.trim();
 
-    if (!llmPath) {
-        alert("Please enter a valid LLM path.");
-        return false;
-    }
-
-    // Show modal with a downloading message
-    document.getElementById("modal-body").textContent = "Downloading the model...";
-    $('#downloadModal').modal('show');
-
-        // Send AJAX request to download the LLM
-    fetch(`/api/download_llm/`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({ llm_path: llmPath })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById("modal-body").textContent = "Model downloaded successfully!";
-            setTimeout(() => location.reload(), 2000);
-        } else {
-            document.getElementById("modal-body").textContent = `Error: ${data.error}`;
+        if (!llmName) {
+            alert("Please enter a valid LLM path.");
+            return;
         }
-    })
-    .catch(error => {
-        document.getElementById("modal-body").textContent = "An unexpected error occurred.";
-        console.error("Error downloading model:", error);
-    });
 
-    return false; // Prevent form default submission
-}
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch("{% url 'download_llm' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrfToken
+            },
+            body: new URLSearchParams({ llm_name: llmName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById("modal-body").textContent = data.message;
+            } else {
+                document.getElementById("modal-body").textContent = `Error: ${data.error}`;
+            }
+            document.getElementById("downloadModal").style.display = "block";
+            setTimeout(() => location.reload(), 2000);
+        })
+        .catch(error => {
+            document.getElementById("modal-body").textContent = "An unexpected error occurred.";
+            document.getElementById("downloadModal").style.display = "block";
+            console.error("Error:", error);
+        });
+    });
 </script>
 {% endblock scripts %}
 

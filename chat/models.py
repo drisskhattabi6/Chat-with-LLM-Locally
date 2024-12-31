@@ -17,12 +17,6 @@ class Message(models.Model):
     def __str__(self):
         return f"{self.sender}: {self.content[:50]}"
 
-# class LLM(models.Model) :
-#     llm_name = models.CharField(max_length=255)
-
-#     def __str__(self):
-#         return f"LLM Name : {self.llm_name}"
-
 class DownloadedModel(models.Model):
     llm_name = models.CharField(max_length=255, unique=True)
     is_downloaded = models.BooleanField(default=False)
